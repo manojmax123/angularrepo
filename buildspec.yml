@@ -8,7 +8,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...          
-      - docker build -t angularrepo .  
+      - docker build -t angularrepo . 
       - docker tag angularrepo:latest 125571554996.dkr.ecr.ap-south-1.amazonaws.com/angularrepo:latest
   post_build:
     commands:
