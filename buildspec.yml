@@ -1,19 +1,32 @@
-
 version: 0.2
 
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
+      - aws --version
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 125571554996.dkr.ecr.ap-south-1.amazonaws.com
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
-    commands:
+   commands:
       - echo Build started on `date`
-      - echo Building the Docker image...          
-      - docker build -t angularrepo .
-      - docker tag angularrepo:latest 125571554996.dkr.ecr.ap-south-1.amazonaws.com/angularrepo:latest
+      - echo Building the Docker image...
+      - docker build -t newrepo .
+      - docker tag newrepo:latest 125571554996.dkr.ecr.ap-south-1.amazonaws.com/newrepo:latest
   post_build:
-    commands:
+   commands:
       - echo Build completed on `date`
-      - echo Pushing the Docker image...
-      - docker push 125571554996.dkr.ecr.ap-south-1.amazonaws.com/angularrepo:latest
+      - echo Pushing the Docker images...
+      - echo $CODEBUILD_BUILD_NUMBER
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - docker push 125571554996.dkr.ecr.ap-south-1.amazonaws.com/newrepo:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"newrepo","imageUri":"%s"}]'  125571554996.dkr.ecr.ap-south-1.amazonaws.com/angular-app:latest:$CODEBUILD_BUILD_NUMBER > sumittask.json
+      - cat sumittask.json
+      - echo Start post_build...
+artifacts:
+  files:
+     - '**/*'
+     - imageDetail.json
+     - sumittask.json
+  discard-paths: no
